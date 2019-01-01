@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIRS Criteria Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .calculator-section, .history-section {
+            margin-bottom: 30px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="number"] {
+            width: 200px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        .criteria-met {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .criteria-not-met {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .history-list {
+            margin-top: 15px;
+        }
+        .history-item {
+            padding: 10px;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SIRS Criteria Calculator</h1>
+        <div class="calculator-section">
+            <div class="input-group">
+                <label for="temperature">Temperature (°C):</label>
+                <input type="number" id="temperature" step="0.1" placeholder="36.5-37.5">
+            </div>
+            <div class="input-group">
+                <label for="heartRate">Heart Rate (beats/min):</label>
+                <input type="number" id="heartRate" placeholder="60-100">
+            </div>
+            <div class="input-group">
+                <label for="respiratoryRate">Respiratory Rate (breaths/min):</label>
+                <input type="number" id="respiratoryRate" placeholder="12-20">
+            </div>
+            <div class="input-group">
+                <label for="wbc">White Blood Cell Count (cells/mm³):</label>
+                <input type="number" id="wbc" placeholder="4,000-12,000">
+            </div>
+            <button id="calculateButton">Calculate</button>
+            <div id="result" class="result"></div>
+        </div>
+
+        <div class="history-section">
+            <h2>Recent Calculations</h2>
+            <div id="historyList" class="history-list"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const calculateButton = document.getElementById('calculateButton');
+            const resultDiv = document.getElementById('result');
+            const historyList = document.getElementById('historyList');
+
+            // Load initial history
+            loadHistory();
+
+            calculateButton.addEventListener('click', async () => {
+                const data = {
+                    temperature: parseFloat(document.getElementById('temperature').value),
+                    heartRate: parseInt(document.getElementById('heartRate').value),
+                    respiratoryRate: parseInt(document.getElementById('respiratoryRate').value),
+                    wbc: parseInt(document.getElementById('wbc').value)
+                };
+
+                try {
+                    const response = await fetch('/api/sirs/calculate', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        displayResult(result.data);
+                        loadHistory(); // Reload history after new calculation
+                    } else {
+                        throw new Error(result.error);
+                    }
+                } catch (error) {
+                    resultDiv.className = 'result criteria-not-met';
+                    resultDiv.textContent = `Error: ${error.message}`;
+                }
+            });
+
+            async function loadHistory() {
+                try {
+                    const response = await fetch('/api/sirs/history');
+                    const result = await response.json();
+
+                    if (result.success) {
+                        displayHistory(result.data);
+                    }
+                } catch (error) {
+                    console.error('Error loading history:', error);
+                }
+            }
+
+            function displayResult(data) {
+                resultDiv.className = 'result ' + (data.sirsMet ? 'criteria-met' : 'criteria-not-met');
+                resultDiv.innerHTML = `
+                    <h3>${data.sirsMet ? 'SIRS CRITERIA MET' : 'SIRS CRITERIA NOT MET'}</h3>
+                    <p>Criteria met: ${data.criteriaCount}/4</p>
+                `;
+            }
+
+            function displayHistory(history) {
+                historyList.innerHTML = history.map(item => `
+                    <div class="history-item ${item.sirsMet ? 'criteria-met' : 'criteria-not-met'}">
+                        <p>Date: ${new Date(item.createdAt).toLocaleString()}</p>
+                        <p>Temperature: ${item.temperature}°C</p>
+                        <p>Heart Rate: ${item.heartRate} bpm</p>
+                        <p>Respiratory Rate: ${item.respiratoryRate} breaths/min</p>
+                        <p>WBC: ${item.wbc}/mm³</p>
+                        <p>Criteria Met: ${item.criteriaCount}/4</p>
+                        <p>SIRS: ${item.sirsMet ? 'Positive' : 'Negative'}</p>
+                    </div>
+                `).join('');
+            }
+        });
+    </script>
+</body>
+</html>
