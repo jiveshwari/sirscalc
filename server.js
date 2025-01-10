@@ -4,7 +4,7 @@ const cors = require('cors');
 const path = require('path');
 
 // Import dependencies
-const InMemorySIRSRepository = require('./src/infrastructure/database/memory/InMemorySIRSRepository');
+const VercelSIRSRepository = require('./src/infrastructure/database/vercel/VercelSIRSRepository');
 const SIRSService = require('./src/application/services/SIRSService');
 const SIRSController = require('./src/presentation/controllers/SIRSController');
 const createSIRSRouter = require('./src/presentation/routes/sirsRoutes');
@@ -18,7 +18,7 @@ app.use(express.json());
 app.use(express.static('public'));
 
 // Initialize singleton repository instance
-const sirsRepository = new InMemorySIRSRepository();
+const sirsRepository = new VercelSIRSRepository();
 const sirsService = new SIRSService(sirsRepository);
 const sirsController = new SIRSController(sirsService);
 
@@ -26,10 +26,9 @@ const sirsController = new SIRSController(sirsService);
 async function initialize() {
     try {
         await sirsRepository.initialize();
-        console.log('In-memory repository initialized successfully');
+        console.log('Vercel MySQL repository initialized successfully');
     } catch (error) {
         console.error('Initialization error:', error);
-        // Don't exit process in production/serverless environment
         console.error(error);
     }
 }

@@ -1,7 +1,7 @@
 {
   "name": "sirs-calculator",
   "version": "1.0.0",
-  "description": "SIRS Criteria Calculator with in-memory storage",
+  "description": "SIRS Criteria Calculator with Vercel MySQL storage",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -11,7 +11,8 @@
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5",
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.3.1",
+    "@vercel/postgres": "^0.5.1"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
