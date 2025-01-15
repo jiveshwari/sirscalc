@@ -33,21 +33,16 @@ class VercelSIRSRepository extends ISIRSRepository {
 
     async initialize() {
         try {
-            // Test the connection
+            // First try to create the table if it doesn't exist
+            await this.createTable();
+
+            // Test the connection by fetching a single row
             const { data, error } = await this.supabase
                 .from('sirs_calculations')
-                .select('count(*)')
-                .limit(1)
-                .single();
+                .select('id')
+                .limit(1);
 
-            if (error) {
-                // If table doesn't exist, create it
-                if (error.code === '42P01') {
-                    await this.createTable();
-                } else {
-                    throw error;
-                }
-            }
+            if (error) throw error;
 
             console.log('Supabase connection test successful');
         } catch (error) {
@@ -58,11 +53,48 @@ class VercelSIRSRepository extends ISIRSRepository {
 
     async createTable() {
         try {
+            // Using raw SQL query to create table
             const { error } = await this.supabase.rpc('create_sirs_table');
-            if (error) throw error;
-            console.log('SIRS table created successfully');
+            
+            // If the function doesn't exist yet, create it first
+            if (error && error.message.includes('does not exist')) {
+                const createFunction = `
+                    CREATE OR REPLACE FUNCTION create_sirs_table()
+                    RETURNS void
+                    LANGUAGE plpgsql
+                    SECURITY DEFINER
+                    AS $$
+                    BEGIN
+                        CREATE TABLE IF NOT EXISTS sirs_calculations (
+                            id SERIAL PRIMARY KEY,
+                            temperature DECIMAL(5,2) NOT NULL,
+                            heart_rate INTEGER NOT NULL,
+                            respiratory_rate INTEGER NOT NULL,
+                            wbc INTEGER NOT NULL,
+                            sirs_met BOOLEAN NOT NULL,
+                            criteria_count INTEGER NOT NULL,
+                            criteria_details JSONB NOT NULL,
+                            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                        );
+                    END;
+                    $$;
+                `;
+                
+                const { error: functionError } = await this.supabase.rpc('exec', { sql: createFunction });
+                if (functionError && !functionError.message.includes('already exists')) {
+                    throw functionError;
+                }
+                
+                // Try creating the table again
+                const { error: retryError } = await this.supabase.rpc('create_sirs_table');
+                if (retryError && !retryError.message.includes('already exists')) {
+                    throw retryError;
+                }
+            }
+
+            console.log('SIRS table setup completed');
         } catch (error) {
-            console.error('Error creating table:', error);
+            console.error('Error setting up table:', error);
             throw error;
         }
     }
@@ -74,7 +106,7 @@ class VercelSIRSRepository extends ISIRSRepository {
                 heart_rate: sirsCalculation.heartRate,
                 respiratory_rate: sirsCalculation.respiratoryRate,
                 wbc: sirsCalculation.wbc,
-                sirs_met: sirsCalculation.sirsMet,
+                sirs_met: sirsCalculation.isSIRSMet(),
                 criteria_count: sirsCalculation.criteriaCount,
                 criteria_details: sirsCalculation.criteriaDetails
             };

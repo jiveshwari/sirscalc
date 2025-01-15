@@ -1,36 +1,40 @@
 const SIRSCalculation = require('../../domain/entities/SIRSCalculation');
+const ISIRSRepository = require('../../domain/repositories/ISIRSRepository');
 
 class SIRSService {
-    constructor(sirsRepository) {
-        this.sirsRepository = sirsRepository;
+    constructor(repository) {
+        if (!(repository instanceof ISIRSRepository)) {
+            throw new Error('Repository must implement ISIRSRepository');
+        }
+        this.repository = repository;
     }
 
     validateInput(data) {
         const { temperature, heartRate, respiratoryRate, wbc } = data;
-        
-        if (!temperature || !heartRate || !respiratoryRate || !wbc) {
-            throw new Error('All fields are required');
+        const errors = [];
+
+        // Temperature validation (33-42°C covers hypothermia to severe fever)
+        if (typeof temperature !== 'number' || temperature < 33 || temperature > 42) {
+            errors.push('Temperature must be between 33°C and 42°C');
         }
 
-        if (isNaN(temperature) || isNaN(heartRate) || isNaN(respiratoryRate) || isNaN(wbc)) {
-            throw new Error('All values must be numbers');
+        // Heart rate validation (20-200 bpm covers bradycardia to severe tachycardia)
+        if (typeof heartRate !== 'number' || heartRate < 20 || heartRate > 200) {
+            errors.push('Heart rate must be between 20 and 200 beats/min');
         }
 
-        // Basic range validations
-        if (temperature < 30 || temperature > 45) {
-            throw new Error('Temperature must be between 30°C and 45°C');
+        // Respiratory rate validation (4-60 breaths/min covers respiratory depression to severe tachypnea)
+        if (typeof respiratoryRate !== 'number' || respiratoryRate < 4 || respiratoryRate > 60) {
+            errors.push('Respiratory rate must be between 4 and 60 breaths/min');
         }
 
-        if (heartRate < 0 || heartRate > 300) {
-            throw new Error('Heart rate must be between 0 and 300 beats/min');
+        // WBC validation (100-50,000 covers severe leukopenia to severe leukocytosis)
+        if (typeof wbc !== 'number' || wbc < 100 || wbc > 50000) {
+            errors.push('White blood cell count must be between 100 and 50,000 /mm³');
         }
 
-        if (respiratoryRate < 0 || respiratoryRate > 100) {
-            throw new Error('Respiratory rate must be between 0 and 100 breaths/min');
-        }
-
-        if (wbc < 0 || wbc > 100000) {
-            throw new Error('WBC must be between 0 and 100,000/mm³');
+        if (errors.length > 0) {
+            throw new Error(errors.join(', '));
         }
     }
 
@@ -44,17 +48,17 @@ class SIRSService {
             parseInt(data.wbc)
         );
 
-        const savedCalculation = await this.sirsRepository.save(calculation);
+        const savedCalculation = await this.repository.save(calculation);
         return savedCalculation.toJSON();
     }
 
     async getRecentCalculations(limit = 10) {
-        const calculations = await this.sirsRepository.getRecentCalculations(limit);
+        const calculations = await this.repository.getRecentCalculations(limit);
         return calculations.map(calc => calc.toJSON());
     }
 
     async getCalculationById(id) {
-        const calculation = await this.sirsRepository.getById(id);
+        const calculation = await this.repository.getById(id);
         return calculation ? calculation.toJSON() : null;
     }
 }
