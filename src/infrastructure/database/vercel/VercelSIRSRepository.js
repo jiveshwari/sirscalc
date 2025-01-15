@@ -5,17 +5,29 @@ const SIRSCalculation = require('../../../domain/entities/SIRSCalculation');
 class VercelSIRSRepository extends ISIRSRepository {
     constructor() {
         super();
-        this.supabase = createClient(
-            process.env.SUPA__SUPABASE_URL,
-            process.env.SUPA__SUPABASE_SERVICE_ROLE_KEY
-        );
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+        const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
+
+        if (!supabaseUrl || !supabaseKey) {
+            throw new Error('Missing Supabase environment variables. Please check your configuration.');
+        }
+
+        this.supabase = createClient(supabaseUrl, supabaseKey);
     }
 
     async initialize() {
         try {
-            // Create the table if it doesn't exist using Supabase's SQL editor
-            // This is typically done through Supabase's dashboard
-            console.log('Supabase client initialized successfully');
+            // Test the connection
+            const { data, error } = await this.supabase
+                .from('sirs_calculations')
+                .select('count')
+                .limit(1);
+
+            if (error) {
+                throw error;
+            }
+
+            console.log('Supabase connection test successful');
         } catch (error) {
             console.error('Database initialization error:', error);
             throw error;
@@ -23,22 +35,28 @@ class VercelSIRSRepository extends ISIRSRepository {
     }
 
     async save(sirsCalculation) {
+        if (!this.supabase) {
+            throw new Error('Supabase client not initialized');
+        }
+
         try {
+            const calculationData = {
+                temperature: sirsCalculation.temperature,
+                heart_rate: sirsCalculation.heartRate,
+                respiratory_rate: sirsCalculation.respiratoryRate,
+                wbc: sirsCalculation.wbc,
+                criteria_met: sirsCalculation.criteriaCount
+            };
+
             const { data, error } = await this.supabase
                 .from('sirs_calculations')
-                .insert([
-                    {
-                        temperature: sirsCalculation.temperature,
-                        heart_rate: sirsCalculation.heartRate,
-                        respiratory_rate: sirsCalculation.respiratoryRate,
-                        wbc: sirsCalculation.wbc,
-                        criteria_met: sirsCalculation.criteriaCount
-                    }
-                ])
+                .insert([calculationData])
                 .select()
                 .single();
 
-            if (error) throw error;
+            if (error) {
+                throw error;
+            }
 
             return new SIRSCalculation(
                 data.temperature,

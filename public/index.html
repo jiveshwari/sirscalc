@@ -88,6 +88,39 @@
             font-size: 0.9em;
             margin-top: 4px;
         }
+        .loading {
+            padding: 10px;
+            text-align: center;
+        }
+        .error {
+            padding: 10px;
+            text-align: center;
+            color: #721c24;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+        }
+        .no-history {
+            padding: 10px;
+            text-align: center;
+        }
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .history-date {
+            font-weight: bold;
+        }
+        .history-result {
+            font-weight: bold;
+            color: #666;
+        }
+        .history-details {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -134,21 +167,25 @@
             loadHistory();
 
             calculateButton.addEventListener('click', async () => {
-                const data = {
-                    temperature: parseFloat(document.getElementById('temperature').value),
-                    heartRate: parseInt(document.getElementById('heartRate').value),
-                    respiratoryRate: parseInt(document.getElementById('respiratoryRate').value),
-                    wbc: parseInt(document.getElementById('wbc').value)
-                };
-
-                // Validate inputs
-                if (!data.temperature || !data.heartRate || !data.respiratoryRate || !data.wbc) {
-                    resultDiv.className = 'result criteria-not-met';
-                    resultDiv.textContent = 'Error: All fields are required';
-                    return;
-                }
-
                 try {
+                    // Disable button during calculation
+                    calculateButton.disabled = true;
+                    calculateButton.textContent = 'Calculating...';
+                    resultDiv.className = 'result';
+                    resultDiv.textContent = 'Processing...';
+
+                    const data = {
+                        temperature: parseFloat(document.getElementById('temperature').value),
+                        heartRate: parseInt(document.getElementById('heartRate').value),
+                        respiratoryRate: parseInt(document.getElementById('respiratoryRate').value),
+                        wbc: parseInt(document.getElementById('wbc').value)
+                    };
+
+                    // Validate inputs
+                    if (!data.temperature || !data.heartRate || !data.respiratoryRate || !data.wbc) {
+                        throw new Error('All fields are required');
+                    }
+
                     const response = await fetch('/api/sirs/calculate', {
                         method: 'POST',
                         headers: {
@@ -156,6 +193,11 @@
                         },
                         body: JSON.stringify(data)
                     });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'Server error occurred');
+                    }
 
                     const result = await response.json();
 
@@ -168,19 +210,33 @@
                 } catch (error) {
                     resultDiv.className = 'result criteria-not-met';
                     resultDiv.textContent = `Error: ${error.message}`;
+                } finally {
+                    // Re-enable button
+                    calculateButton.disabled = false;
+                    calculateButton.textContent = 'Calculate';
                 }
             });
 
             async function loadHistory() {
                 try {
+                    historyList.innerHTML = '<div class="loading">Loading history...</div>';
+                    
                     const response = await fetch('/api/sirs/history');
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to load history');
+                    }
+
                     const result = await response.json();
 
                     if (result.success) {
                         displayHistory(result.data);
+                    } else {
+                        throw new Error(result.error);
                     }
                 } catch (error) {
                     console.error('Error loading history:', error);
+                    historyList.innerHTML = `<div class="error">Error loading history: ${error.message}</div>`;
                 }
             }
 
@@ -199,29 +255,34 @@
                 }
 
                 resultDiv.innerHTML = `
-                    <h3>${data.sirsMet ? 'SIRS CRITERIA MET' : 'SIRS CRITERIA NOT MET'}</h3>
-                    <p>Criteria met: ${data.criteriaCount}/4</p>
+                    <h3>${data.sirsMet ? 'SIRS Criteria Met' : 'SIRS Criteria Not Met'}</h3>
                     <div class="criteria-details">
                         ${criteriaHtml}
+                    </div>
+                    <div class="summary">
+                        <strong>Criteria Met:</strong> ${data.criteriaCount}/4
                     </div>
                 `;
             }
 
             function displayHistory(history) {
+                if (!history || history.length === 0) {
+                    historyList.innerHTML = '<div class="no-history">No calculations found</div>';
+                    return;
+                }
+
                 historyList.innerHTML = history.map(item => `
                     <div class="history-item ${item.sirsMet ? 'criteria-met' : 'criteria-not-met'}">
-                        <p>Date: ${new Date(item.createdAt).toLocaleString()}</p>
-                        <div class="criteria-details">
-                            ${Object.entries(item.criteriaDetails).map(([key, details]) => `
-                                <div class="criteria-item ${details.met ? 'met' : 'not-met'}">
-                                    <strong>${key.charAt(0).toUpperCase() + key.slice(1)}:</strong> ${details.value}
-                                    <br>
-                                    <small>${details.criterion} - ${details.met ? 'Met' : 'Not Met'}</small>
-                                </div>
-                            `).join('')}
+                        <div class="history-header">
+                            <span class="history-date">${new Date(item.timestamp).toLocaleString()}</span>
+                            <span class="history-result">${item.sirsMet ? 'SIRS Criteria Met' : 'SIRS Criteria Not Met'}</span>
                         </div>
-                        <p><strong>Total Criteria Met:</strong> ${item.criteriaCount}/4</p>
-                        <p><strong>SIRS Status:</strong> ${item.sirsMet ? 'Positive' : 'Negative'}</p>
+                        <div class="history-details">
+                            <div>Temperature: ${item.temperature}°C</div>
+                            <div>Heart Rate: ${item.heartRate} bpm</div>
+                            <div>Respiratory Rate: ${item.respiratoryRate}/min</div>
+                            <div>WBC: ${item.wbc}/mm³</div>
+                        </div>
                     </div>
                 `).join('');
             }
