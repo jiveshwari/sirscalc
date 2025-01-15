@@ -49,10 +49,8 @@ class SIRSService {
     }
 
     async getRecentCalculations(limit = 10) {
-        const calculations = await this.sirsRepository.getAll();
-        return calculations
-            .slice(0, limit)
-            .map(calc => calc.toJSON());
+        const calculations = await this.sirsRepository.getRecentCalculations(limit);
+        return calculations.map(calc => calc.toJSON());
     }
 
     async getCalculationById(id) {

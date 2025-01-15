@@ -11,41 +11,58 @@ class VercelSIRSRepository extends ISIRSRepository {
         if (!supabaseUrl || !supabaseKey) {
             console.error('Missing Supabase environment variables:', { 
                 hasUrl: !!supabaseUrl, 
-                hasKey: !!supabaseKey 
+                hasKey: !!supabaseKey,
+                envKeys: Object.keys(process.env)
             });
             throw new Error('Missing Supabase environment variables. Please check your configuration.');
         }
 
+        console.log('Initializing Supabase with:', {
+            url: supabaseUrl,
+            hasKey: !!supabaseKey
+        });
+
         this.supabase = createClient(supabaseUrl, supabaseKey, {
             auth: {
-                persistSession: false
-            },
-            db: {
-                schema: 'public'
+                persistSession: false,
+                autoRefreshToken: false,
+                detectSessionInUrl: false
             }
         });
     }
 
     async initialize() {
         try {
-            // Test the connection and create table if it doesn't exist
-            const { error: tableError } = await this.supabase.rpc('create_sirs_table');
-            
-            if (tableError && !tableError.message.includes('relation "sirs_calculations" already exists')) {
-                throw tableError;
-            }
-
-            // Test a simple query
+            // Test the connection
             const { data, error } = await this.supabase
                 .from('sirs_calculations')
-                .select('id')
-                .limit(1);
+                .select('count(*)')
+                .limit(1)
+                .single();
 
-            if (error) throw error;
+            if (error) {
+                // If table doesn't exist, create it
+                if (error.code === '42P01') {
+                    await this.createTable();
+                } else {
+                    throw error;
+                }
+            }
 
             console.log('Supabase connection test successful');
         } catch (error) {
             console.error('Database initialization error:', error);
+            throw error;
+        }
+    }
+
+    async createTable() {
+        try {
+            const { error } = await this.supabase.rpc('create_sirs_table');
+            if (error) throw error;
+            console.log('SIRS table created successfully');
+        } catch (error) {
+            console.error('Error creating table:', error);
             throw error;
         }
     }
@@ -62,6 +79,8 @@ class VercelSIRSRepository extends ISIRSRepository {
                 criteria_details: sirsCalculation.criteriaDetails
             };
 
+            console.log('Saving calculation:', calculationData);
+
             const { data, error } = await this.supabase
                 .from('sirs_calculations')
                 .insert([calculationData])
@@ -72,6 +91,8 @@ class VercelSIRSRepository extends ISIRSRepository {
                 console.error('Error saving to Supabase:', error);
                 throw error;
             }
+
+            console.log('Calculation saved successfully:', data);
 
             const calculation = new SIRSCalculation(
                 data.temperature,
@@ -91,6 +112,8 @@ class VercelSIRSRepository extends ISIRSRepository {
 
     async getById(id) {
         try {
+            console.log('Fetching calculation by id:', id);
+
             const { data, error } = await this.supabase
                 .from('sirs_calculations')
                 .select('*')
@@ -103,6 +126,8 @@ class VercelSIRSRepository extends ISIRSRepository {
             }
 
             if (!data) return null;
+
+            console.log('Found calculation:', data);
 
             const calculation = new SIRSCalculation(
                 data.temperature,
@@ -122,6 +147,8 @@ class VercelSIRSRepository extends ISIRSRepository {
 
     async getRecentCalculations(limit = 10) {
         try {
+            console.log('Fetching recent calculations, limit:', limit);
+
             const { data, error } = await this.supabase
                 .from('sirs_calculations')
                 .select('*')
@@ -132,6 +159,8 @@ class VercelSIRSRepository extends ISIRSRepository {
                 console.error('Error fetching from Supabase:', error);
                 throw error;
             }
+
+            console.log('Found calculations:', data?.length || 0);
 
             return data.map(item => {
                 const calculation = new SIRSCalculation(

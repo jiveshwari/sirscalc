@@ -138,190 +138,202 @@
 <body>
     <div class="container">
         <h1>SIRS Criteria Calculator</h1>
-        <div class="calculator-section">
+        <form id="calculator-form" class="calculator-section">
             <div class="input-group">
                 <label for="temperature">Temperature (°C):</label>
-                <input type="number" id="temperature" step="0.1" placeholder="36.5-37.5">
+                <input type="number" id="temperature" name="temperature" step="0.1" placeholder="36.5-37.5">
                 <div class="info-text">Normal range: 36.0-38.0°C</div>
             </div>
             <div class="input-group">
                 <label for="heartRate">Heart Rate (beats/min):</label>
-                <input type="number" id="heartRate" placeholder="60-100">
+                <input type="number" id="heartRate" name="heartRate" placeholder="60-100">
                 <div class="info-text">SIRS criterion: >90 bpm</div>
             </div>
             <div class="input-group">
                 <label for="respiratoryRate">Respiratory Rate (breaths/min):</label>
-                <input type="number" id="respiratoryRate" placeholder="12-20">
+                <input type="number" id="respiratoryRate" name="respiratoryRate" placeholder="12-20">
                 <div class="info-text">SIRS criterion: >20 breaths/min</div>
             </div>
             <div class="input-group">
                 <label for="wbc">White Blood Cell Count (cells/mm³):</label>
-                <input type="number" id="wbc" placeholder="4,000-12,000">
+                <input type="number" id="wbc" name="wbc" placeholder="4,000-12,000">
                 <div class="info-text">Normal range: 4,000-12,000/mm³</div>
             </div>
-            <button id="calculateButton">Calculate</button>
+            <button id="calculate-button" type="submit">Calculate</button>
             <div id="result" class="result"></div>
-        </div>
+        </form>
 
         <div class="history-section">
             <h2>Recent Calculations</h2>
-            <div id="historyList" class="history-list"></div>
+            <div id="history-list" class="history-list"></div>
         </div>
     </div>
 
     <script>
+        // API endpoints
+        const API_ENDPOINTS = {
+            calculate: '/api/sirs/calculate',
+            history: '/api/sirs/history'
+        };
+
+        // DOM elements
+        const form = document.getElementById('calculator-form');
+        const calculateButton = document.getElementById('calculate-button');
+        const resultDiv = document.getElementById('result');
+        const historyList = document.getElementById('history-list');
+
+        // Load history on page load
         document.addEventListener('DOMContentLoaded', () => {
-            const calculateButton = document.getElementById('calculateButton');
-            const resultDiv = document.getElementById('result');
-            const historyList = document.getElementById('historyList');
-
-            // API endpoints
-            const API_BASE_URL = window.location.origin;
-            const API_ENDPOINTS = {
-                calculate: `${API_BASE_URL}/api/sirs/calculate`,
-                history: `${API_BASE_URL}/api/sirs/history`
-            };
-
-            // Load initial history
             loadHistory();
+        });
 
-            calculateButton.addEventListener('click', async () => {
-                try {
-                    // Disable button during calculation
-                    calculateButton.disabled = true;
-                    calculateButton.textContent = 'Calculating...';
-                    resultDiv.className = 'result';
-                    resultDiv.textContent = 'Processing...';
+        // Handle form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            calculateButton.disabled = true;
+            calculateButton.textContent = 'Calculating...';
+            resultDiv.innerHTML = '<div class="loading">Calculating...</div>';
 
-                    const data = {
-                        temperature: parseFloat(document.getElementById('temperature').value),
-                        heartRate: parseInt(document.getElementById('heartRate').value),
-                        respiratoryRate: parseInt(document.getElementById('respiratoryRate').value),
-                        wbc: parseInt(document.getElementById('wbc').value)
-                    };
+            try {
+                const formData = new FormData(form);
+                const data = {
+                    temperature: parseFloat(formData.get('temperature')),
+                    heartRate: parseInt(formData.get('heartRate')),
+                    respiratoryRate: parseInt(formData.get('respiratoryRate')),
+                    wbc: parseInt(formData.get('wbc'))
+                };
 
-                    // Validate inputs
-                    if (Object.values(data).some(value => isNaN(value))) {
-                        throw new Error('All fields must be valid numbers');
-                    }
-
-                    console.log('Sending calculation request:', data);
-                    const response = await fetch(API_ENDPOINTS.calculate, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify(data)
-                    });
-
-                    console.log('Received response:', response.status);
-                    const result = await response.json();
-                    console.log('Response data:', result);
-
-                    if (!response.ok) {
-                        throw new Error(result.error || `Server error: ${response.status}`);
-                    }
-
-                    if (result.success) {
-                        displayResult(result.data);
-                        loadHistory(); // Reload history after new calculation
-                    } else {
-                        throw new Error(result.error || 'Unknown error occurred');
-                    }
-                } catch (error) {
-                    console.error('Calculation error:', error);
-                    resultDiv.className = 'result criteria-not-met';
-                    resultDiv.textContent = `Error: ${error.message}`;
-                } finally {
-                    // Re-enable button
-                    calculateButton.disabled = false;
-                    calculateButton.textContent = 'Calculate';
-                }
-            });
-
-            async function loadHistory() {
-                try {
-                    historyList.innerHTML = '<div class="loading">Loading history...</div>';
-                    
-                    console.log('Fetching history from:', API_ENDPOINTS.history);
-                    const response = await fetch(API_ENDPOINTS.history, {
-                        headers: {
-                            'Accept': 'application/json'
-                        }
-                    });
-
-                    console.log('History response status:', response.status);
-                    const result = await response.json();
-                    console.log('History data:', result);
-
-                    if (!response.ok) {
-                        throw new Error(result.error || `Server error: ${response.status}`);
-                    }
-
-                    if (result.success) {
-                        displayHistory(result.data);
-                    } else {
-                        throw new Error(result.error || 'Failed to load history');
-                    }
-                } catch (error) {
-                    console.error('Error loading history:', error);
-                    historyList.innerHTML = `
-                        <div class="error">
-                            Error loading history: ${error.message}
-                            <button onclick="loadHistory()" class="retry-button">Retry</button>
-                        </div>
-                    `;
-                }
-            }
-
-            function displayResult(data) {
-                resultDiv.className = 'result ' + (data.sirsMet ? 'criteria-met' : 'criteria-not-met');
-                
-                let criteriaHtml = '';
-                for (const [key, details] of Object.entries(data.criteriaDetails)) {
-                    criteriaHtml += `
-                        <div class="criteria-item ${details.met ? 'met' : 'not-met'}">
-                            <strong>${key.charAt(0).toUpperCase() + key.slice(1)}:</strong> ${details.value}
-                            <br>
-                            <small>${details.criterion} - ${details.met ? 'Criterion Met' : 'Criterion Not Met'}</small>
-                        </div>
-                    `;
+                // Validate inputs
+                if (Object.values(data).some(value => isNaN(value))) {
+                    throw new Error('All fields must be valid numbers');
                 }
 
+                console.log('Sending calculation request:', data);
+                const response = await fetch(API_ENDPOINTS.calculate, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `Server error: ${response.status}`);
+                }
+
+                const result = await response.json();
+                console.log('Response data:', result);
+
+                if (result.success) {
+                    displayResult(result.data);
+                    await loadHistory(); // Reload history after new calculation
+                } else {
+                    throw new Error(result.error || 'Unknown error occurred');
+                }
+            } catch (error) {
+                console.error('Calculation error:', error);
+                resultDiv.className = 'result criteria-not-met';
                 resultDiv.innerHTML = `
-                    <h3>${data.sirsMet ? 'SIRS Criteria Met' : 'SIRS Criteria Not Met'}</h3>
-                    <div class="criteria-details">
-                        ${criteriaHtml}
+                    <div class="error">
+                        Error: ${error.message}
+                        <button onclick="retryCalculation()" class="retry-button">Retry</button>
                     </div>
-                    <div class="summary">
-                        <strong>Criteria Met:</strong> ${data.criteriaCount}/4
+                `;
+            } finally {
+                calculateButton.disabled = false;
+                calculateButton.textContent = 'Calculate';
+            }
+        });
+
+        async function loadHistory() {
+            try {
+                historyList.innerHTML = '<div class="loading">Loading history...</div>';
+                
+                console.log('Fetching history from:', API_ENDPOINTS.history);
+                const response = await fetch(API_ENDPOINTS.history, {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `Server error: ${response.status}`);
+                }
+
+                const result = await response.json();
+                console.log('History data:', result);
+
+                if (result.success) {
+                    displayHistory(result.data);
+                } else {
+                    throw new Error(result.error || 'Failed to load history');
+                }
+            } catch (error) {
+                console.error('Error loading history:', error);
+                historyList.innerHTML = `
+                    <div class="error">
+                        Error loading history: ${error.message}
+                        <button onclick="loadHistory()" class="retry-button">Retry</button>
+                    </div>
+                `;
+            }
+        }
+
+        function displayResult(data) {
+            resultDiv.className = 'result ' + (data.sirsMet ? 'criteria-met' : 'criteria-not-met');
+            
+            let criteriaHtml = '';
+            for (const [key, details] of Object.entries(data.criteriaDetails)) {
+                criteriaHtml += `
+                    <div class="criteria-item ${details.met ? 'met' : 'not-met'}">
+                        <strong>${key.charAt(0).toUpperCase() + key.slice(1)}:</strong> ${details.value}
+                        <br>
+                        <small>${details.criterion} - ${details.met ? 'Criterion Met' : 'Criterion Not Met'}</small>
                     </div>
                 `;
             }
 
-            function displayHistory(history) {
-                if (!history || history.length === 0) {
-                    historyList.innerHTML = '<div class="no-history">No calculations found</div>';
-                    return;
-                }
+            resultDiv.innerHTML = `
+                <h3>${data.sirsMet ? 'SIRS Criteria Met' : 'SIRS Criteria Not Met'}</h3>
+                <div class="criteria-details">
+                    ${criteriaHtml}
+                </div>
+                <div class="summary">
+                    <strong>Criteria Met:</strong> ${data.criteriaCount}/4
+                </div>
+            `;
+        }
 
-                historyList.innerHTML = history.map(item => `
-                    <div class="history-item ${item.sirsMet ? 'criteria-met' : 'criteria-not-met'}">
-                        <div class="history-header">
-                            <span class="history-date">${new Date(item.createdAt).toLocaleString()}</span>
-                            <span class="history-result">${item.sirsMet ? 'SIRS Criteria Met' : 'SIRS Criteria Not Met'}</span>
-                        </div>
-                        <div class="history-details">
-                            <div>Temperature: ${item.temperature}°C</div>
-                            <div>Heart Rate: ${item.heartRate} bpm</div>
-                            <div>Respiratory Rate: ${item.respiratoryRate}/min</div>
-                            <div>WBC: ${item.wbc}/mm³</div>
-                        </div>
-                    </div>
-                `).join('');
+        function displayHistory(history) {
+            if (!history || history.length === 0) {
+                historyList.innerHTML = '<div class="no-history">No calculations found</div>';
+                return;
             }
-        });
+
+            const historyHtml = history.map(item => `
+                <div class="history-item ${item.sirsMet ? 'criteria-met' : 'criteria-not-met'}">
+                    <div class="history-header">
+                        <span class="criteria-count">Criteria Met: ${item.criteriaCount}/4</span>
+                        <span class="date">${new Date(item.createdAt).toLocaleString()}</span>
+                    </div>
+                    <div class="history-details">
+                        <div>Temperature: ${item.temperature}°C</div>
+                        <div>Heart Rate: ${item.heartRate} bpm</div>
+                        <div>Respiratory Rate: ${item.respiratoryRate} /min</div>
+                        <div>WBC: ${item.wbc} /mm³</div>
+                    </div>
+                </div>
+            `).join('');
+
+            historyList.innerHTML = historyHtml;
+        }
+
+        function retryCalculation() {
+            form.dispatchEvent(new Event('submit'));
+        }
     </script>
 </body>
 </html>
