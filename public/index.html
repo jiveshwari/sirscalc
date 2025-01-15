@@ -133,6 +133,55 @@
         .retry-button:hover {
             background-color: #0056b3;
         }
+
+        .history-controls {
+            margin-bottom: 1rem;
+            text-align: right;
+        }
+
+        .clear-all-button {
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+        }
+
+        .clear-all-button:hover {
+            background-color: #cc0000;
+        }
+
+        .delete-button {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            font-size: 1rem;
+            opacity: 0;
+            transition: opacity 0.2s, color 0.2s;
+        }
+
+        .history-item:hover .delete-button {
+            opacity: 1;
+        }
+
+        .delete-button:hover {
+            color: #ff4444;
+        }
+
+        .history-item.deleting {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .history-list.clearing {
+            opacity: 0.5;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
