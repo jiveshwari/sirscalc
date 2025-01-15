@@ -121,6 +121,18 @@
             border: 1px solid #ddd;
             border-radius: 4px;
         }
+        .retry-button {
+            margin-left: 10px;
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .retry-button:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
@@ -163,6 +175,13 @@
             const resultDiv = document.getElementById('result');
             const historyList = document.getElementById('historyList');
 
+            // API endpoints
+            const API_BASE_URL = window.location.origin;
+            const API_ENDPOINTS = {
+                calculate: `${API_BASE_URL}/api/sirs/calculate`,
+                history: `${API_BASE_URL}/api/sirs/history`
+            };
+
             // Load initial history
             loadHistory();
 
@@ -182,32 +201,36 @@
                     };
 
                     // Validate inputs
-                    if (!data.temperature || !data.heartRate || !data.respiratoryRate || !data.wbc) {
-                        throw new Error('All fields are required');
+                    if (Object.values(data).some(value => isNaN(value))) {
+                        throw new Error('All fields must be valid numbers');
                     }
 
-                    const response = await fetch('/api/sirs/calculate', {
+                    console.log('Sending calculation request:', data);
+                    const response = await fetch(API_ENDPOINTS.calculate, {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json'
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
                         },
                         body: JSON.stringify(data)
                     });
 
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.error || 'Server error occurred');
-                    }
-
+                    console.log('Received response:', response.status);
                     const result = await response.json();
+                    console.log('Response data:', result);
+
+                    if (!response.ok) {
+                        throw new Error(result.error || `Server error: ${response.status}`);
+                    }
 
                     if (result.success) {
                         displayResult(result.data);
                         loadHistory(); // Reload history after new calculation
                     } else {
-                        throw new Error(result.error);
+                        throw new Error(result.error || 'Unknown error occurred');
                     }
                 } catch (error) {
+                    console.error('Calculation error:', error);
                     resultDiv.className = 'result criteria-not-met';
                     resultDiv.textContent = `Error: ${error.message}`;
                 } finally {
@@ -221,22 +244,34 @@
                 try {
                     historyList.innerHTML = '<div class="loading">Loading history...</div>';
                     
-                    const response = await fetch('/api/sirs/history');
-                    
-                    if (!response.ok) {
-                        throw new Error('Failed to load history');
-                    }
+                    console.log('Fetching history from:', API_ENDPOINTS.history);
+                    const response = await fetch(API_ENDPOINTS.history, {
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
 
+                    console.log('History response status:', response.status);
                     const result = await response.json();
+                    console.log('History data:', result);
+
+                    if (!response.ok) {
+                        throw new Error(result.error || `Server error: ${response.status}`);
+                    }
 
                     if (result.success) {
                         displayHistory(result.data);
                     } else {
-                        throw new Error(result.error);
+                        throw new Error(result.error || 'Failed to load history');
                     }
                 } catch (error) {
                     console.error('Error loading history:', error);
-                    historyList.innerHTML = `<div class="error">Error loading history: ${error.message}</div>`;
+                    historyList.innerHTML = `
+                        <div class="error">
+                            Error loading history: ${error.message}
+                            <button onclick="loadHistory()" class="retry-button">Retry</button>
+                        </div>
+                    `;
                 }
             }
 
@@ -274,7 +309,7 @@
                 historyList.innerHTML = history.map(item => `
                     <div class="history-item ${item.sirsMet ? 'criteria-met' : 'criteria-not-met'}">
                         <div class="history-header">
-                            <span class="history-date">${new Date(item.timestamp).toLocaleString()}</span>
+                            <span class="history-date">${new Date(item.createdAt).toLocaleString()}</span>
                             <span class="history-result">${item.sirsMet ? 'SIRS Criteria Met' : 'SIRS Criteria Not Met'}</span>
                         </div>
                         <div class="history-details">

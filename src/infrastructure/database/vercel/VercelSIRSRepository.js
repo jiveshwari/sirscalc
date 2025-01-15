@@ -9,23 +9,39 @@ class VercelSIRSRepository extends ISIRSRepository {
         const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
 
         if (!supabaseUrl || !supabaseKey) {
+            console.error('Missing Supabase environment variables:', { 
+                hasUrl: !!supabaseUrl, 
+                hasKey: !!supabaseKey 
+            });
             throw new Error('Missing Supabase environment variables. Please check your configuration.');
         }
 
-        this.supabase = createClient(supabaseUrl, supabaseKey);
+        this.supabase = createClient(supabaseUrl, supabaseKey, {
+            auth: {
+                persistSession: false
+            },
+            db: {
+                schema: 'public'
+            }
+        });
     }
 
     async initialize() {
         try {
-            // Test the connection
+            // Test the connection and create table if it doesn't exist
+            const { error: tableError } = await this.supabase.rpc('create_sirs_table');
+            
+            if (tableError && !tableError.message.includes('relation "sirs_calculations" already exists')) {
+                throw tableError;
+            }
+
+            // Test a simple query
             const { data, error } = await this.supabase
                 .from('sirs_calculations')
-                .select('count')
+                .select('id')
                 .limit(1);
 
-            if (error) {
-                throw error;
-            }
+            if (error) throw error;
 
             console.log('Supabase connection test successful');
         } catch (error) {
@@ -35,17 +51,15 @@ class VercelSIRSRepository extends ISIRSRepository {
     }
 
     async save(sirsCalculation) {
-        if (!this.supabase) {
-            throw new Error('Supabase client not initialized');
-        }
-
         try {
             const calculationData = {
                 temperature: sirsCalculation.temperature,
                 heart_rate: sirsCalculation.heartRate,
                 respiratory_rate: sirsCalculation.respiratoryRate,
                 wbc: sirsCalculation.wbc,
-                criteria_met: sirsCalculation.criteriaCount
+                sirs_met: sirsCalculation.sirsMet,
+                criteria_count: sirsCalculation.criteriaCount,
+                criteria_details: sirsCalculation.criteriaDetails
             };
 
             const { data, error } = await this.supabase
@@ -55,17 +69,20 @@ class VercelSIRSRepository extends ISIRSRepository {
                 .single();
 
             if (error) {
+                console.error('Error saving to Supabase:', error);
                 throw error;
             }
 
-            return new SIRSCalculation(
+            const calculation = new SIRSCalculation(
                 data.temperature,
                 data.heart_rate,
                 data.respiratory_rate,
-                data.wbc,
-                data.id,
-                data.created_at
+                data.wbc
             );
+            calculation.sirsMet = data.sirs_met;
+            calculation.criteriaCount = data.criteria_count;
+            calculation.criteriaDetails = data.criteria_details;
+            return calculation;
         } catch (error) {
             console.error('Error saving calculation:', error);
             throw error;
@@ -80,42 +97,56 @@ class VercelSIRSRepository extends ISIRSRepository {
                 .eq('id', id)
                 .single();
 
-            if (error) throw error;
+            if (error) {
+                console.error('Error fetching from Supabase:', error);
+                throw error;
+            }
+
             if (!data) return null;
 
-            return new SIRSCalculation(
+            const calculation = new SIRSCalculation(
                 data.temperature,
                 data.heart_rate,
                 data.respiratory_rate,
-                data.wbc,
-                data.id,
-                data.created_at
+                data.wbc
             );
+            calculation.sirsMet = data.sirs_met;
+            calculation.criteriaCount = data.criteria_count;
+            calculation.criteriaDetails = data.criteria_details;
+            return calculation;
         } catch (error) {
             console.error('Error fetching calculation:', error);
             throw error;
         }
     }
 
-    async getAll() {
+    async getRecentCalculations(limit = 10) {
         try {
             const { data, error } = await this.supabase
                 .from('sirs_calculations')
                 .select('*')
-                .order('created_at', { ascending: false });
+                .order('created_at', { ascending: false })
+                .limit(limit);
 
-            if (error) throw error;
+            if (error) {
+                console.error('Error fetching from Supabase:', error);
+                throw error;
+            }
 
-            return data.map(row => new SIRSCalculation(
-                row.temperature,
-                row.heart_rate,
-                row.respiratory_rate,
-                row.wbc,
-                row.id,
-                row.created_at
-            ));
+            return data.map(item => {
+                const calculation = new SIRSCalculation(
+                    item.temperature,
+                    item.heart_rate,
+                    item.respiratory_rate,
+                    item.wbc
+                );
+                calculation.sirsMet = item.sirs_met;
+                calculation.criteriaCount = item.criteria_count;
+                calculation.criteriaDetails = item.criteria_details;
+                return calculation;
+            });
         } catch (error) {
-            console.error('Error fetching calculations:', error);
+            console.error('Error fetching recent calculations:', error);
             throw error;
         }
     }

@@ -15,34 +15,74 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Initialize singleton repository instance
-const sirsRepository = new VercelSIRSRepository();
-const sirsService = new SIRSService(sirsRepository);
-const sirsController = new SIRSController(sirsService);
+// Initialize repository and service instances
+let sirsRepository;
+let sirsService;
+let sirsController;
 
 // Initialize repository
 async function initialize() {
     try {
-        await sirsRepository.initialize();
-        console.log('Vercel MySQL repository initialized successfully');
+        if (!sirsRepository) {
+            sirsRepository = new VercelSIRSRepository();
+            await sirsRepository.initialize();
+            sirsService = new SIRSService(sirsRepository);
+            sirsController = new SIRSController(sirsService);
+            console.log('Repository initialized successfully');
+        }
     } catch (error) {
         console.error('Initialization error:', error);
-        console.error(error);
+        throw error;
     }
 }
 
-// Routes
-app.use('/api/sirs', createSIRSRouter(sirsController));
+// Middleware to ensure initialization
+app.use(async (req, res, next) => {
+    try {
+        if (!sirsRepository) {
+            await initialize();
+        }
+        next();
+    } catch (error) {
+        console.error('Middleware initialization error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Server initialization failed'
+        });
+    }
+});
 
-// Serve the frontend
-app.get('/', (req, res) => {
+// Routes
+app.use('/api/sirs', (req, res, next) => {
+    if (!sirsController) {
+        return res.status(500).json({
+            success: false,
+            error: 'Server not initialized'
+        });
+    }
+    return createSIRSRouter(sirsController)(req, res, next);
+});
+
+// Serve static files
+app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Initialize on startup
-initialize();
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Global error handler:', err);
+    res.status(500).json({
+        success: false,
+        error: 'Internal server error'
+    });
+});
+
+// Initialize on startup for development
+if (process.env.NODE_ENV !== 'production') {
+    initialize().catch(console.error);
+}
 
 // Export for serverless
 module.exports = app;
