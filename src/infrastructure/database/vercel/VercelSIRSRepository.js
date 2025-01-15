@@ -1,22 +1,21 @@
-const { sql } = require('@vercel/postgres');
+const { createClient } = require('@supabase/supabase-js');
 const ISIRSRepository = require('../../../domain/repositories/ISIRSRepository');
 const SIRSCalculation = require('../../../domain/entities/SIRSCalculation');
 
 class VercelSIRSRepository extends ISIRSRepository {
+    constructor() {
+        super();
+        this.supabase = createClient(
+            process.env.SUPA__SUPABASE_URL,
+            process.env.SUPA__SUPABASE_SERVICE_ROLE_KEY
+        );
+    }
+
     async initialize() {
         try {
-            await sql`
-                CREATE TABLE IF NOT EXISTS sirs_calculations (
-                    id SERIAL PRIMARY KEY,
-                    temperature DECIMAL(4,1) NOT NULL,
-                    heart_rate INTEGER NOT NULL,
-                    respiratory_rate INTEGER NOT NULL,
-                    wbc INTEGER NOT NULL,
-                    criteria_met INTEGER NOT NULL,
-                    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-                );
-            `;
-            console.log('Database initialized successfully');
+            // Create the table if it doesn't exist using Supabase's SQL editor
+            // This is typically done through Supabase's dashboard
+            console.log('Supabase client initialized successfully');
         } catch (error) {
             console.error('Database initialization error:', error);
             throw error;
@@ -24,58 +23,83 @@ class VercelSIRSRepository extends ISIRSRepository {
     }
 
     async save(sirsCalculation) {
-        const result = await sql`
-            INSERT INTO sirs_calculations 
-                (temperature, heart_rate, respiratory_rate, wbc, criteria_met)
-            VALUES 
-                (${sirsCalculation.temperature}, 
-                 ${sirsCalculation.heartRate}, 
-                 ${sirsCalculation.respiratoryRate}, 
-                 ${sirsCalculation.wbc}, 
-                 ${sirsCalculation.criteriaCount})
-            RETURNING id, created_at;
-        `;
+        try {
+            const { data, error } = await this.supabase
+                .from('sirs_calculations')
+                .insert([
+                    {
+                        temperature: sirsCalculation.temperature,
+                        heart_rate: sirsCalculation.heartRate,
+                        respiratory_rate: sirsCalculation.respiratoryRate,
+                        wbc: sirsCalculation.wbc,
+                        criteria_met: sirsCalculation.criteriaCount
+                    }
+                ])
+                .select()
+                .single();
 
-        return new SIRSCalculation(
-            sirsCalculation.temperature,
-            sirsCalculation.heartRate,
-            sirsCalculation.respiratoryRate,
-            sirsCalculation.wbc,
-            result[0].id,
-            result[0].created_at
-        );
+            if (error) throw error;
+
+            return new SIRSCalculation(
+                data.temperature,
+                data.heart_rate,
+                data.respiratory_rate,
+                data.wbc,
+                data.id,
+                data.created_at
+            );
+        } catch (error) {
+            console.error('Error saving calculation:', error);
+            throw error;
+        }
     }
 
     async getById(id) {
-        const result = await sql`
-            SELECT * FROM sirs_calculations 
-            WHERE id = ${id};
-        `;
+        try {
+            const { data, error } = await this.supabase
+                .from('sirs_calculations')
+                .select('*')
+                .eq('id', id)
+                .single();
 
-        if (result.length === 0) return null;
+            if (error) throw error;
+            if (!data) return null;
 
-        return this._mapToEntity(result[0]);
+            return new SIRSCalculation(
+                data.temperature,
+                data.heart_rate,
+                data.respiratory_rate,
+                data.wbc,
+                data.id,
+                data.created_at
+            );
+        } catch (error) {
+            console.error('Error fetching calculation:', error);
+            throw error;
+        }
     }
 
-    async getRecentCalculations(limit = 10) {
-        const result = await sql`
-            SELECT * FROM sirs_calculations 
-            ORDER BY created_at DESC 
-            LIMIT ${limit};
-        `;
+    async getAll() {
+        try {
+            const { data, error } = await this.supabase
+                .from('sirs_calculations')
+                .select('*')
+                .order('created_at', { ascending: false });
 
-        return result.map(row => this._mapToEntity(row));
-    }
+            if (error) throw error;
 
-    _mapToEntity(row) {
-        return new SIRSCalculation(
-            parseFloat(row.temperature),
-            row.heart_rate,
-            row.respiratory_rate,
-            row.wbc,
-            row.id,
-            row.created_at
-        );
+            return data.map(row => new SIRSCalculation(
+                row.temperature,
+                row.heart_rate,
+                row.respiratory_rate,
+                row.wbc,
+                row.id,
+                row.created_at
+            ));
+        } catch (error) {
+            console.error('Error fetching calculations:', error);
+            throw error;
+        }
     }
 }
 
