@@ -1,5 +1,5 @@
-const ISIRSRepository = require('../../../domain/repositories/ISIRSRepository');
-const SIRSCalculation = require('../../../domain/entities/SIRSCalculation');
+import ISIRSRepository from '../../../../domain/repositories/ISIRSRepository.js';
+import SIRSCalculation from '../../../../domain/entities/SIRSCalculation.js';
 
 class MySQLSIRSRepository extends ISIRSRepository {
     constructor(pool) {
@@ -73,4 +73,4 @@ class MySQLSIRSRepository extends ISIRSRepository {
     }
 }
 
-module.exports = MySQLSIRSRepository;
+export default MySQLSIRSRepository;

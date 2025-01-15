@@ -1,5 +1,5 @@
-const ISIRSRepository = require('../../../domain/repositories/ISIRSRepository');
-const SIRSCalculation = require('../../../domain/entities/SIRSCalculation');
+import ISIRSRepository from '../../../../domain/repositories/ISIRSRepository.js';
+import SIRSCalculation from '../../../../domain/entities/SIRSCalculation.js';
 
 class InMemorySIRSRepository extends ISIRSRepository {
     constructor() {
@@ -52,4 +52,4 @@ class InMemorySIRSRepository extends ISIRSRepository {
     }
 }
 
-module.exports = InMemorySIRSRepository;
+export default InMemorySIRSRepository;

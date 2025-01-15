@@ -8,8 +8,8 @@ export const DATE_FORMAT_OPTIONS = {
 };
 
 export function getTimeAgo(date) {
-    const now = new Date('2025-01-15T06:54:06-08:00'); // Using provided current time
-    const diffMs = now - date;
+    const now = new Date(); // Using current time
+    const diffMs = now - new Date(date);
     const diffSecs = Math.floor(diffMs / 1000);
     const diffMins = Math.floor(diffSecs / 60);
     const diffHours = Math.floor(diffMins / 60);
@@ -24,10 +24,11 @@ export function getTimeAgo(date) {
     } else if (diffDays < 7) {
         return `${diffDays}d ago`;
     } else {
-        return date.toLocaleString('en-US', {
+        const dateObj = new Date(date);
+        return dateObj.toLocaleString('en-US', {
             month: 'short',
             day: 'numeric',
-            year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+            year: dateObj.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
         });
     }
 }

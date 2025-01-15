@@ -55,7 +55,7 @@ class SIRSCalculation {
         };
     }
 
-    isSIRSMet() {
+    hasSIRS() {
         return this.criteriaCount >= 2;
     }
 
@@ -66,12 +66,12 @@ class SIRSCalculation {
             heartRate: this.heartRate,
             respiratoryRate: this.respiratoryRate,
             wbc: this.wbc,
+            createdAt: this.createdAt,
             criteriaCount: this.criteriaCount,
             criteriaDetails: this.criteriaDetails,
-            sirsMet: this.isSIRSMet(),
-            createdAt: this.createdAt
+            hasSIRS: this.hasSIRS()
         };
     }
 }
 
-module.exports = SIRSCalculation;
+export default SIRSCalculation;

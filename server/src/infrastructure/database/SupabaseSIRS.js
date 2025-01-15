@@ -1,6 +1,6 @@
-const { createClient } = require('@supabase/supabase-js');
-const ISIRSRepository = require('../../../domain/repositories/ISIRSRepository');
-const SIRSCalculation = require('../../../domain/entities/SIRSCalculation');
+import { createClient } from '@supabase/supabase-js';
+import ISIRSRepository from '../../domain/repositories/ISIRSRepository.js';
+import SIRSCalculation from '../../domain/entities/SIRSCalculation.js';
 
 class VercelSIRSRepository extends ISIRSRepository {
     constructor() {
@@ -106,9 +106,10 @@ class VercelSIRSRepository extends ISIRSRepository {
                 heart_rate: sirsCalculation.heartRate,
                 respiratory_rate: sirsCalculation.respiratoryRate,
                 wbc: sirsCalculation.wbc,
-                sirs_met: sirsCalculation.isSIRSMet(),
+                sirs_met: sirsCalculation.hasSIRS(),
                 criteria_count: sirsCalculation.criteriaCount,
-                criteria_details: sirsCalculation.criteriaDetails
+                criteria_details: sirsCalculation.criteriaDetails,
+                created_at: new Date().toISOString()
             };
 
             console.log('Saving calculation:', calculationData);
@@ -126,16 +127,14 @@ class VercelSIRSRepository extends ISIRSRepository {
 
             console.log('Calculation saved successfully:', data);
 
-            const calculation = new SIRSCalculation(
+            return new SIRSCalculation(
                 data.temperature,
                 data.heart_rate,
                 data.respiratory_rate,
-                data.wbc
+                data.wbc,
+                data.id,
+                new Date(data.created_at)
             );
-            calculation.sirsMet = data.sirs_met;
-            calculation.criteriaCount = data.criteria_count;
-            calculation.criteriaDetails = data.criteria_details;
-            return calculation;
         } catch (error) {
             console.error('Error saving calculation:', error);
             throw error;
@@ -161,16 +160,14 @@ class VercelSIRSRepository extends ISIRSRepository {
 
             console.log('Found calculation:', data);
 
-            const calculation = new SIRSCalculation(
+            return new SIRSCalculation(
                 data.temperature,
                 data.heart_rate,
                 data.respiratory_rate,
-                data.wbc
+                data.wbc,
+                data.id,
+                new Date(data.created_at)
             );
-            calculation.sirsMet = data.sirs_met;
-            calculation.criteriaCount = data.criteria_count;
-            calculation.criteriaDetails = data.criteria_details;
-            return calculation;
         } catch (error) {
             console.error('Error fetching calculation:', error);
             throw error;
@@ -194,23 +191,19 @@ class VercelSIRSRepository extends ISIRSRepository {
 
             console.log('Found calculations:', data?.length || 0);
 
-            return data.map(item => {
-                const calculation = new SIRSCalculation(
-                    item.temperature,
-                    item.heart_rate,
-                    item.respiratory_rate,
-                    item.wbc
-                );
-                calculation.sirsMet = item.sirs_met;
-                calculation.criteriaCount = item.criteria_count;
-                calculation.criteriaDetails = item.criteria_details;
-                return calculation;
-            });
+            return data.map(item => new SIRSCalculation(
+                item.temperature,
+                item.heart_rate,
+                item.respiratory_rate,
+                item.wbc,
+                item.id,
+                new Date(item.created_at)
+            ));
         } catch (error) {
-            console.error('Error fetching recent calculations:', error);
+            console.error('Error fetching calculations:', error);
             throw error;
         }
     }
 }
 
-module.exports = VercelSIRSRepository;
+export default VercelSIRSRepository;

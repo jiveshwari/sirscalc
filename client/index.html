@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIRS Criteria Calculator</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>SIRS Criteria Calculator</h1>
+        <form id="calculator-form" class="calculator-section">
+            <div class="input-group">
+                <label for="temperature">Temperature (°C):</label>
+                <input type="number" id="temperature" name="temperature" step="0.1" min="33" max="42" 
+                    placeholder="Enter 33-42°C">
+                <!-- <div class="info-text">SIRS criteria: Temperature >38.0°C or <36.0°C</div> -->
+            </div>
+            <div class="input-group">
+                <label for="heartRate">Heart Rate (beats/min):</label>
+                <input type="number" id="heartRate" name="heartRate" min="20" max="200" 
+                    placeholder="Enter 20-200 beats/min">
+                <!-- <div class="info-text">SIRS criterion: Heart rate >90 beats/min</div> -->
+            </div>
+            <div class="input-group">
+                <label for="respiratoryRate">Respiratory Rate (breaths/min):</label>
+                <input type="number" id="respiratoryRate" name="respiratoryRate" min="4" max="60" 
+                    placeholder="Enter 4-60 breaths/min">
+                <!-- <div class="info-text">SIRS criterion: Respiratory rate >20 breaths/min</div> -->
+            </div>
+            <div class="input-group">
+                <label for="wbc">White Blood Cell Count (/mm³):</label>
+                <input type="number" id="wbc" name="wbc" min="100" max="50000" 
+                    placeholder="Enter 100-50,000 /mm³">
+                <!-- <div class="info-text">SIRS criterion: WBC >12,000/mm³ or <4,000/mm³</div> -->
+            </div>
+            <button id="calculate-button" type="submit">Calculate</button>
+            <div id="result" class="result"></div>
+        </form>
+
+        <div class="history-section">
+            <h2>Recent Calculations</h2>
+            <div id="history-list" class="history-list"></div>
+        </div>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

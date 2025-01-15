@@ -2,10 +2,11 @@
   "name": "medicalcalc",
   "version": "1.0.0",
   "description": "SIRS Criteria Calculator",
-  "main": "server.js",
+  "type": "module",
+  "main": "server/index.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "start": "node server/index.js",
+    "dev": "nodemon server/index.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.3",

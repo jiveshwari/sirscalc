@@ -102,4 +102,4 @@ class SIRSController {
     }
 }
 
-module.exports = SIRSController;
+export default SIRSController;

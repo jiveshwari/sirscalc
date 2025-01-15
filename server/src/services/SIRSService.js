@@ -1,5 +1,5 @@
-const SIRSCalculation = require('../../domain/entities/SIRSCalculation');
-const ISIRSRepository = require('../../domain/repositories/ISIRSRepository');
+import SIRSCalculation from '../domain/entities/SIRSCalculation.js';
+import ISIRSRepository from '../domain/repositories/ISIRSRepository.js';
 
 class SIRSService {
     constructor(repository) {
@@ -49,18 +49,8 @@ class SIRSService {
         );
 
         const savedCalculation = await this.repository.save(calculation);
-        return savedCalculation.toJSON();
-    }
-
-    async getRecentCalculations(limit = 10) {
-        const calculations = await this.repository.getRecentCalculations(limit);
-        return calculations.map(calc => calc.toJSON());
-    }
-
-    async getCalculationById(id) {
-        const calculation = await this.repository.getById(id);
-        return calculation ? calculation.toJSON() : null;
+        return savedCalculation;
     }
 }
 
-module.exports = SIRSService;
+export default SIRSService;

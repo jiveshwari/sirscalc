@@ -1,4 +1,4 @@
-const express = require('express');
+import express from 'express';
 
 function createSIRSRouter(sirsController) {
     const router = express.Router();
@@ -32,4 +32,4 @@ function createSIRSRouter(sirsController) {
     return router;
 }
 
-module.exports = createSIRSRouter;
+export default createSIRSRouter;

@@ -15,7 +15,7 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'client')));
 
 // Initialize repository and service instances
 let sirsRepository;
@@ -67,7 +67,7 @@ app.use('/api/sirs', (req, res, next) => {
 
 // Serve static files
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, 'client', 'index.html'));
 });
 
 // Error handling middleware
