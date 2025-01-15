@@ -4,7 +4,7 @@ const cors = require('cors');
 const path = require('path');
 
 // Import dependencies
-const VercelSIRSRepository = require('./src/infrastructure/database/vercel/VercelSIRSRepository');
+const SupabaseSIRS = require('./src/infrastructure/database/vercel/SupabaseSIRS');
 const SIRSService = require('./src/application/services/SIRSService');
 const SIRSController = require('./src/presentation/controllers/SIRSController');
 const createSIRSRouter = require('./src/presentation/routes/sirsRoutes');
@@ -26,7 +26,7 @@ let sirsController;
 async function initialize() {
     try {
         if (!sirsRepository) {
-            sirsRepository = new VercelSIRSRepository();
+            sirsRepository = new SupabaseSIRS();
             await sirsRepository.initialize();
             sirsService = new SIRSService(sirsRepository);
             sirsController = new SIRSController(sirsService);

@@ -4,7 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 // Import dependencies
-import VercelSIRSRepository from './src/infrastructure/database/SupabaseSIRS.js';
+import SupabaseSIRS from './src/infrastructure/database/SupabaseSIRS.js';
 import SIRSService from './src/services/SIRSService.js';
 import SIRSController from './src/presentation/controllers/SIRSController.js';
 import createSIRSRouter from './src/presentation/routes/sirsRoutes.js';
@@ -25,27 +25,60 @@ app.use(express.static(path.join(__dirname, '../client')));
 let sirsRepository;
 let sirsService;
 let sirsController;
+let sirsRouter;
 
 // Initialize repository
 async function initialize() {
     try {
-        if (!sirsRepository) {
-            sirsRepository = new VercelSIRSRepository();
-            await sirsRepository.initialize();
-            sirsService = new SIRSService(sirsRepository);
-            sirsController = new SIRSController(sirsService);
-            console.log('Repository initialized successfully');
-        }
+        // Initialize repository
+        sirsRepository = new SupabaseSIRS();
+        await sirsRepository.initialize();
+        console.log('Repository initialized successfully');
+
+        // Initialize service
+        sirsService = new SIRSService(sirsRepository);
+        console.log('Service initialized successfully');
+
+        // Initialize controller
+        sirsController = new SIRSController(sirsService);
+        console.log('Controller initialized successfully');
+
+        // Create router
+        sirsRouter = express.Router();
+        
+        // Set up routes
+        sirsRouter.post('/calculate', asyncHandler(async (req, res) => {
+            await sirsController.calculate(req, res);
+        }));
+
+        sirsRouter.get('/history', asyncHandler(async (req, res) => {
+            await sirsController.getHistory(req, res);
+        }));
+
+        sirsRouter.get('/:id', asyncHandler(async (req, res) => {
+            await sirsController.getById(req, res);
+        }));
+
+        sirsRouter.delete('/clear', asyncHandler(async (req, res) => {
+            await sirsController.clearHistory(req, res);
+        }));
+
+        console.log('Router initialized successfully');
     } catch (error) {
         console.error('Initialization error:', error);
         throw error;
     }
 }
 
+// Middleware to handle async errors
+const asyncHandler = (fn) => (req, res, next) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+};
+
 // Middleware to ensure initialization
 app.use(async (req, res, next) => {
     try {
-        if (!sirsRepository) {
+        if (!sirsRouter) {
             await initialize();
         }
         next();
@@ -55,7 +88,15 @@ app.use(async (req, res, next) => {
 });
 
 // Mount SIRS routes
-app.use('/api/sirs', createSIRSRouter(sirsController));
+app.use('/api/sirs', (req, res, next) => {
+    if (!sirsRouter) {
+        return res.status(500).json({
+            success: false,
+            error: 'Server not initialized'
+        });
+    }
+    sirsRouter(req, res, next);
+});
 
 // Serve index.html for all other routes
 app.get('*', (req, res) => {

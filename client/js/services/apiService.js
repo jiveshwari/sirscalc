@@ -1,7 +1,6 @@
 const API_ENDPOINTS = {
     calculate: '/api/sirs/calculate',
     history: '/api/sirs/history',
-    deleteCalculation: '/api/sirs/delete',
     clearHistory: '/api/sirs/clear'
 };
 
@@ -53,26 +52,6 @@ class ApiService {
         }
 
         return result.data;
-    }
-
-    async deleteCalculation(id) {
-        console.log('Deleting calculation:', id);
-        const response = await fetch(`${API_ENDPOINTS.deleteCalculation}/${id}`, {
-            method: 'DELETE',
-            headers: {
-                'Accept': 'application/json'
-            }
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || `Server error: ${response.status}`);
-        }
-
-        const result = await response.json();
-        if (!result.success) {
-            throw new Error(result.error || 'Failed to delete calculation');
-        }
     }
 
     async clearHistory() {

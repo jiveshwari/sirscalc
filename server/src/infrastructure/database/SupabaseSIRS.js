@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import ISIRSRepository from '../../domain/repositories/ISIRSRepository.js';
 import SIRSCalculation from '../../domain/entities/SIRSCalculation.js';
 
-class VercelSIRSRepository extends ISIRSRepository {
+class SupabaseSIRS extends ISIRSRepository {
     constructor() {
         super();
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
@@ -204,6 +204,48 @@ class VercelSIRSRepository extends ISIRSRepository {
             throw error;
         }
     }
+
+    async deleteCalculation(id) {
+        try {
+            console.log('Deleting calculation:', id);
+
+            const { error } = await this.supabase
+                .from('sirs_calculations')
+                .delete()
+                .eq('id', id);
+
+            if (error) {
+                console.error('Error deleting from Supabase:', error);
+                throw error;
+            }
+
+            console.log('Calculation deleted successfully');
+        } catch (error) {
+            console.error('Error deleting calculation:', error);
+            throw error;
+        }
+    }
+
+    async clearHistory() {
+        try {
+            console.log('Clearing all calculations');
+
+            const { error } = await this.supabase
+                .from('sirs_calculations')
+                .delete()
+                .neq('id', 0); // Delete all rows
+
+            if (error) {
+                console.error('Error clearing history in Supabase:', error);
+                throw error;
+            }
+
+            console.log('History cleared successfully');
+        } catch (error) {
+            console.error('Error clearing history:', error);
+            throw error;
+        }
+    }
 }
 
-export default VercelSIRSRepository;
+export default SupabaseSIRS;

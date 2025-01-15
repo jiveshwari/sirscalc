@@ -68,35 +68,18 @@ class SIRSController {
         }
     }
 
-    async getById(req, res) {
+    async clearHistory(req, res) {
         try {
-            const id = parseInt(req.params.id);
-            
-            if (isNaN(id)) {
-                return res.status(400).json({
-                    success: false,
-                    error: 'Invalid ID format'
-                });
-            }
-
-            const calculation = await this.sirsService.getCalculationById(id);
-            
-            if (!calculation) {
-                return res.status(404).json({
-                    success: false,
-                    error: 'Calculation not found'
-                });
-            }
-
+            await this.sirsService.clearHistory();
             res.json({
                 success: true,
-                data: calculation
+                message: 'History cleared successfully'
             });
         } catch (error) {
-            console.error('Error fetching calculation:', error);
+            console.error('Error clearing history:', error);
             res.status(500).json({
                 success: false,
-                error: 'Failed to fetch calculation'
+                error: 'Failed to clear history'
             });
         }
     }

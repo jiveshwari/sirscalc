@@ -1,4 +1,4 @@
-# SIRS Criteria Calculator
+# [SIRS Criteria Calculator](https://medicalcalc.vercel.app/)
 
 A modern web application for calculating Systemic Inflammatory Response Syndrome (SIRS) criteria, designed to assist healthcare professionals in rapid patient assessment and early sepsis detection.
 
@@ -47,9 +47,3 @@ We welcome contributions! Please feel free to submit a Pull Request.
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgments
-
-- Healthcare professionals who provided domain expertise
-- The medical informatics community for standardizing SIRS criteria
-- Open source community for the tools that made this possible

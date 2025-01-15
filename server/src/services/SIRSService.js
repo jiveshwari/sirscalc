@@ -51,6 +51,14 @@ class SIRSService {
         const savedCalculation = await this.repository.save(calculation);
         return savedCalculation;
     }
+
+    async getRecentCalculations(limit = 10) {
+        return await this.repository.getRecentCalculations(limit);
+    }
+
+    async clearHistory() {
+        return await this.repository.clearHistory();
+    }
 }
 
 export default SIRSService;

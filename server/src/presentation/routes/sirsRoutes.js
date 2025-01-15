@@ -1,6 +1,10 @@
 import express from 'express';
 
 function createSIRSRouter(sirsController) {
+    if (!sirsController) {
+        throw new Error('sirsController is required');
+    }
+
     const router = express.Router();
 
     // Middleware to handle async errors

@@ -3,19 +3,23 @@ class ISIRSRepository {
         throw new Error('Method not implemented');
     }
 
-    async getSIRSData(patientId) {
+    async save(sirsCalculation) {
         throw new Error('Method not implemented');
     }
 
-    async saveSIRSData(patientId, data) {
+    async getById(id) {
         throw new Error('Method not implemented');
     }
 
-    async updateSIRSData(patientId, data) {
+    async getRecentCalculations(limit) {
         throw new Error('Method not implemented');
     }
 
-    async deleteSIRSData(patientId) {
+    async deleteCalculation(id) {
+        throw new Error('Method not implemented');
+    }
+
+    async clearHistory() {
         throw new Error('Method not implemented');
     }
 }

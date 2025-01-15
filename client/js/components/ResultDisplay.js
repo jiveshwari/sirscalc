@@ -19,7 +19,8 @@ export class ResultDisplay {
     }
 
     showResult(data) {
-        this.container.className = 'result ' + (data.sirsMet ? 'criteria-met' : 'criteria-not-met');
+        const sirsMet = data.hasSIRS || data.sirsMet;
+        this.container.className = 'result ' + (sirsMet ? 'criteria-met' : 'criteria-not-met');
         
         let criteriaHtml = '';
         for (const [key, details] of Object.entries(data.criteriaDetails)) {
@@ -33,7 +34,7 @@ export class ResultDisplay {
         }
 
         this.container.innerHTML = `
-            <h3>${data.sirsMet ? 'SIRS Criteria Met' : 'SIRS Criteria Not Met'}</h3>
+            <h3>${sirsMet ? 'SIRS Criteria Met' : 'SIRS Criteria Not Met'}</h3>
             <div class="criteria-details">
                 ${criteriaHtml}
             </div>

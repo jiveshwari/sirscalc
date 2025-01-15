@@ -4,7 +4,7 @@ export class SIRSViewModel {
         this.heartRate = data.heartRate;
         this.respiratoryRate = data.respiratoryRate;
         this.wbc = data.wbc;
-        this.sirsMet = data.sirsMet;
+        this.sirsMet = data.hasSIRS || data.sirsMet;
         this.criteriaCount = data.criteriaCount;
         this.criteriaDetails = data.criteriaDetails;
         this.createdAt = data.createdAt ? new Date(data.createdAt) : null;
