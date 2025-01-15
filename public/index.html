@@ -61,6 +61,19 @@
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
+        .criteria-item {
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+        .criteria-item.met {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+        .criteria-item.not-met {
+            background-color: #fff;
+            border: 1px solid #ddd;
+        }
         .history-list {
             margin-top: 15px;
         }
@@ -69,6 +82,11 @@
             border: 1px solid #ddd;
             margin-bottom: 10px;
             border-radius: 4px;
+        }
+        .info-text {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 4px;
         }
     </style>
 </head>
@@ -79,18 +97,22 @@
             <div class="input-group">
                 <label for="temperature">Temperature (°C):</label>
                 <input type="number" id="temperature" step="0.1" placeholder="36.5-37.5">
+                <div class="info-text">Normal range: 36.0-38.0°C</div>
             </div>
             <div class="input-group">
                 <label for="heartRate">Heart Rate (beats/min):</label>
                 <input type="number" id="heartRate" placeholder="60-100">
+                <div class="info-text">SIRS criterion: >90 bpm</div>
             </div>
             <div class="input-group">
                 <label for="respiratoryRate">Respiratory Rate (breaths/min):</label>
                 <input type="number" id="respiratoryRate" placeholder="12-20">
+                <div class="info-text">SIRS criterion: >20 breaths/min</div>
             </div>
             <div class="input-group">
                 <label for="wbc">White Blood Cell Count (cells/mm³):</label>
                 <input type="number" id="wbc" placeholder="4,000-12,000">
+                <div class="info-text">Normal range: 4,000-12,000/mm³</div>
             </div>
             <button id="calculateButton">Calculate</button>
             <div id="result" class="result"></div>
@@ -118,6 +140,13 @@
                     respiratoryRate: parseInt(document.getElementById('respiratoryRate').value),
                     wbc: parseInt(document.getElementById('wbc').value)
                 };
+
+                // Validate inputs
+                if (!data.temperature || !data.heartRate || !data.respiratoryRate || !data.wbc) {
+                    resultDiv.className = 'result criteria-not-met';
+                    resultDiv.textContent = 'Error: All fields are required';
+                    return;
+                }
 
                 try {
                     const response = await fetch('/api/sirs/calculate', {
@@ -157,9 +186,24 @@
 
             function displayResult(data) {
                 resultDiv.className = 'result ' + (data.sirsMet ? 'criteria-met' : 'criteria-not-met');
+                
+                let criteriaHtml = '';
+                for (const [key, details] of Object.entries(data.criteriaDetails)) {
+                    criteriaHtml += `
+                        <div class="criteria-item ${details.met ? 'met' : 'not-met'}">
+                            <strong>${key.charAt(0).toUpperCase() + key.slice(1)}:</strong> ${details.value}
+                            <br>
+                            <small>${details.criterion} - ${details.met ? 'Criterion Met' : 'Criterion Not Met'}</small>
+                        </div>
+                    `;
+                }
+
                 resultDiv.innerHTML = `
                     <h3>${data.sirsMet ? 'SIRS CRITERIA MET' : 'SIRS CRITERIA NOT MET'}</h3>
                     <p>Criteria met: ${data.criteriaCount}/4</p>
+                    <div class="criteria-details">
+                        ${criteriaHtml}
+                    </div>
                 `;
             }
 
@@ -167,12 +211,17 @@
                 historyList.innerHTML = history.map(item => `
                     <div class="history-item ${item.sirsMet ? 'criteria-met' : 'criteria-not-met'}">
                         <p>Date: ${new Date(item.createdAt).toLocaleString()}</p>
-                        <p>Temperature: ${item.temperature}°C</p>
-                        <p>Heart Rate: ${item.heartRate} bpm</p>
-                        <p>Respiratory Rate: ${item.respiratoryRate} breaths/min</p>
-                        <p>WBC: ${item.wbc}/mm³</p>
-                        <p>Criteria Met: ${item.criteriaCount}/4</p>
-                        <p>SIRS: ${item.sirsMet ? 'Positive' : 'Negative'}</p>
+                        <div class="criteria-details">
+                            ${Object.entries(item.criteriaDetails).map(([key, details]) => `
+                                <div class="criteria-item ${details.met ? 'met' : 'not-met'}">
+                                    <strong>${key.charAt(0).toUpperCase() + key.slice(1)}:</strong> ${details.value}
+                                    <br>
+                                    <small>${details.criterion} - ${details.met ? 'Met' : 'Not Met'}</small>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <p><strong>Total Criteria Met:</strong> ${item.criteriaCount}/4</p>
+                        <p><strong>SIRS Status:</strong> ${item.sirsMet ? 'Positive' : 'Negative'}</p>
                     </div>
                 `).join('');
             }
