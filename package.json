@@ -1,5 +1,5 @@
 {
-  "name": "medicalcalc",
+  "name": "sirscalc",
   "version": "1.0.0",
   "description": "SIRS Criteria Calculator",
   "type": "module",
@@ -19,5 +19,13 @@
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "author": {
+    "name": "Jonathan Young",
+    "github": "https://github.com/iterating/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iterating/medicalcSIRS.git"
   }
 }
