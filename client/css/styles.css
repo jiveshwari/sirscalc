@@ -212,3 +212,22 @@ button:hover {
 .hl7-btn:hover {
     background-color: #1e88e5;
 }
+
+.footer {
+    text-align: center;
+    padding: 20px;
+    margin-top: 30px;
+    color: #6c757d;
+    font-size: 0.9em;
+}
+
+.footer a {
+    color: #007bff;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.footer a:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
