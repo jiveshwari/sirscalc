@@ -40,7 +40,7 @@ Early detection of SIRS is crucial because:
 <a href="https://sirscalc.vercel.app/"><img src="https://raw.githubusercontent.com/iterating/sirscalc/refs/heads/main/public/portfolio.sirscalc.calc.jpg" width="350px"><img src="https://raw.githubusercontent.com/iterating/sirscalc/refs/heads/main/public/portfolio.sirscalc.hl7-fhir-export.jpg" width="350px"></a>
 
 
-## Technical Stack
+## Tech Stack
 
 - **Frontend**: Javascript, HTML, CSS
 - **Backend**: Node.js with Express
