@@ -1,7 +1,7 @@
-# [SIRS Criteria Calculator](https://medicalcalc.vercel.app/)
-
-![sirscalc](https://raw.githubusercontent.com/iterating/medicalcalc/main/sirscalc/public/portfolio.sirscalc.calc.jpg)
-![hl7-fhir-export](https://raw.githubusercontent.com/iterating/medicalcalc/main/sirscalc/public/portfolio.sirscalc.hl7-fhir-export.jpg)
+# [SIRS Criteria Calculator](https://medicalcalc.vercel.app/) 
+![Try it out](https://raw.githubusercontent.com/iterating/sirscalc/refs/heads/main/public/portfolio.sirscalc.qr.png)
+![sirscalc](https://raw.githubusercontent.com/iterating/sirscalc/refs/heads/main/public/portfolio.sirscalc.calc.jpg)
+![hl7-fhir-export](https://raw.githubusercontent.com/iterating/sirscalc/refs/heads/main/public/portfolio.sirscalc.hl7-fhir-export.jpg)
 
 A modern web application for calculating Systemic Inflammatory Response Syndrome (SIRS) criteria, designed to assist healthcare professionals in rapid patient assessment and early sepsis detection.
 
