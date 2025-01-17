@@ -1,5 +1,8 @@
 # [SIRS Criteria Calculator](https://medicalcalc.vercel.app/)
 
+![sirscalc](https://raw.githubusercontent.com/iterating/medicalcalc/main/sirscalc/public/portfolio.sirscalc.calc.jpg)
+![hl7-fhir-export](https://raw.githubusercontent.com/iterating/medicalcalc/main/sirscalc/public/portfolio.sirscalc.hl7-fhir-export.jpg)
+
 A modern web application for calculating Systemic Inflammatory Response Syndrome (SIRS) criteria, designed to assist healthcare professionals in rapid patient assessment and early sepsis detection.
 
 I wrote this as a medical student at University of Massachusetts Medical School to lessen cognitive load and improve accuracy while seeing patients in the clinics. 
@@ -30,6 +33,9 @@ Early detection of SIRS is crucial because:
 - **User-friendly Interface**: Clean, intuitive design for rapid data entry
 - **Mobile Responsive**: Use on any device at the bedside
 - **Data Persistence**: Secure storage of calculations using Supabase
+- **Health Data Interoperability**: Export results in FHIR and HL7 formats
+  - FHIR: Export as FHIR Observation resources (JSON)
+  - HL7: Export as HL7 v2.5.1 messages (Text)
 
 ## Technical Stack
 
@@ -38,7 +44,23 @@ Early detection of SIRS is crucial because:
 - **Database**: Supabase (PostgreSQL)
 - **Architecture**: Clean Architecture with Domain-Driven Design
 - **Deployment**: Vercel for serverless deployment
+- **Healthcare Standards**: FHIR R4, HL7 v2.5.1
 
+## Healthcare Interoperability
+
+The SIRS Calculator supports exporting assessment results in two widely-used healthcare interoperability standards:
+
+### FHIR (Fast Healthcare Interoperability Resources)
+- Exports data as FHIR R4 Observation resources
+- JSON format for modern API integration
+- Includes standardized LOINC codes for SIRS assessment
+- Structured data suitable for EHR integration
+
+### HL7 (Health Level 7)
+- Exports data in HL7 v2.5.1 format
+- Traditional text-based format widely used in healthcare
+- Includes MSH, PID, OBR, and OBX segments
+- Compatible with legacy healthcare systems
 
 ## Contributing
 
