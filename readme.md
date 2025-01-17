@@ -1,6 +1,6 @@
-# [SIRS Criteria Calculator](https://medicalcalc.vercel.app/) 
+# [SIRS Criteria Calculator](https://sirscalc.vercel.app/) 
 
-[![SIRS Criteria Calculator](https://raw.githubusercontent.com/iterating/sirscalc/refs/heads/main/public/portfolio.sirscalc.qr.png)](https://medicalcalc.vercel.app/)
+[![SIRS Criteria Calculator](https://raw.githubusercontent.com/iterating/sirscalc/refs/heads/main/public/portfolio.sirscalc.qr.png)](https://sirscalc.vercel.app/)
 **Try it out!**
 
 A modern web application for calculating Systemic Inflammatory Response Syndrome (SIRS) criteria, designed to assist healthcare professionals in rapid patient assessment and early sepsis detection.
@@ -37,7 +37,7 @@ Early detection of SIRS is crucial because:
   - FHIR: Export as FHIR Observation resources (JSON)
   - HL7: Export as HL7 v2.5.1 messages (Text)
 
-<img src="https://raw.githubusercontent.com/iterating/sirscalc/refs/heads/main/public/portfolio.sirscalc.calc.jpg" width="350px"><img src="https://raw.githubusercontent.com/iterating/sirscalc/refs/heads/main/public/portfolio.sirscalc.hl7-fhir-export.jpg" width="350px">
+<a href="https://sirscalc.vercel.app/"><img src="https://raw.githubusercontent.com/iterating/sirscalc/refs/heads/main/public/portfolio.sirscalc.calc.jpg" width="350px"><img src="https://raw.githubusercontent.com/iterating/sirscalc/refs/heads/main/public/portfolio.sirscalc.hl7-fhir-export.jpg" width="350px"></a>
 
 
 ## Technical Stack
