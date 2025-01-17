@@ -1,3 +1,5 @@
+import { exportUtils } from '../utils/exportUtils.js';
+
 export class ResultDisplay {
     constructor(container) {
         this.container = container;
@@ -41,6 +43,21 @@ export class ResultDisplay {
             <div class="summary">
                 <strong>Criteria Met:</strong> ${data.criteriaCount}/4
             </div>
+            <div class="export-buttons">
+                <button class="export-btn fhir-btn">Export FHIR</button>
+                <button class="export-btn hl7-btn">Export HL7</button>
+            </div>
         `;
+
+        // Add event listeners for export buttons
+        this.container.querySelector('.fhir-btn').addEventListener('click', () => {
+            const fhirData = exportUtils.toFHIR(data);
+            exportUtils.downloadFile(fhirData, 'sirs-assessment-fhir.json', 'application/json');
+        });
+
+        this.container.querySelector('.hl7-btn').addEventListener('click', () => {
+            const hl7Data = exportUtils.toHL7(data);
+            exportUtils.downloadFile(hl7Data, 'sirs-assessment-hl7.txt', 'text/plain');
+        });
     }
 }
