@@ -5,6 +5,8 @@ import { fileURLToPath } from 'url';
 
 // Import dependencies
 import SupabaseSIRS from './src/infrastructure/database/SupabaseSIRS.js';
+import InMemorySIRSRepository from './src/infrastructure/database/memory/InMemorySIRSRepository.js';
+import LocalStorageSIRSRepository from './src/infrastructure/database/localstorage/LocalStorageSIRSRepository.js';
 import SIRSService from './src/services/SIRSService.js';
 import SIRSController from './src/presentation/controllers/SIRSController.js';
 import createSIRSRouter from './src/presentation/routes/sirsRoutes.js';
@@ -30,13 +32,28 @@ let sirsRouter;
 // Initialize repository
 async function initialize() {
     try {
-        // Initialize repository
-        sirsRepository = new SupabaseSIRS();
-        await sirsRepository.initialize();
-        console.log('Repository initialized successfully');
+        // Initialize repository based on environment
+        const storageType = process.env.STORAGE_TYPE || 'localstorage';
+        let repository;
+        
+        switch (storageType) {
+            case 'supabase':
+                repository = new SupabaseSIRS();
+                break;
+            case 'memory':
+                repository = new InMemorySIRSRepository();
+                break;
+            case 'localstorage':
+            default:
+                repository = new LocalStorageSIRSRepository();
+                break;
+        }
+        
+        await repository.initialize();
+        console.log(`Repository (${storageType}) initialized successfully`);
 
         // Initialize service
-        sirsService = new SIRSService(sirsRepository);
+        sirsService = new SIRSService(repository);
         console.log('Service initialized successfully');
 
         // Initialize controller
