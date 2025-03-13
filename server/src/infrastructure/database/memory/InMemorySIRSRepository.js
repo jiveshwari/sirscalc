@@ -1,5 +1,5 @@
-import ISIRSRepository from '../../../domain/repositories/ISIRSRepository.js';
-import SIRSCalculation from '../../../domain/entities/SIRSCalculation.js';
+import ISIRSRepository from '../../../../domain/repositories/ISIRSRepository.js';
+import SIRSCalculation from '../../../../domain/entities/SIRSCalculation.js';
 
 class InMemorySIRSRepository extends ISIRSRepository {
     constructor() {
