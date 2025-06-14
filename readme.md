@@ -1,8 +1,7 @@
 # [SIRS Criteria Calculator](https://sirscalc.vercel.app/) 
 
-## Jiveshwari's Contribution Details
+## Jiveshwari's Contribution Details - SIRS Calculator (Fork)
 
-# SIRS Calculator (Fork)
 A React-based web app for calculating SIRS criteria to aid sepsis detection in healthcare. I forked this project to explore its potential for intuitive UI enhancements, aligning with my interest in medical applications of AI.
 
 ## My Contribution Attempt
@@ -16,10 +15,9 @@ A React-based web app for calculating SIRS criteria to aid sepsis detection in h
 ## Future Plans
 With more time, I’d debug dependencies and integrate AI-driven risk prediction, leveraging my experience with AWS Bedrock from my RAG project.
 
+## Author's Contribution
 [![SIRS Criteria Calculator](https://raw.githubusercontent.com/iterating/sirscalc/refs/heads/main/public/portfolio.sirscalc.qr.png)](https://sirscalc.vercel.app/)
 **Try it out!**
-
-A modern web application for calculating Systemic Inflammatory Response Syndrome (SIRS) criteria, designed to assist healthcare professionals in rapid patient assessment and early sepsis detection.
 
 The author wrote this as a medical student at University of Massachusetts Medical School to lessen cognitive load and improve accuracy while seeing patients in the clinics. 
 
