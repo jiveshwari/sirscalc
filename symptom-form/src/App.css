@@ -1,0 +1,91 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.p-4 {
+  padding: 1rem;
+}
+.max-w-md {
+  max-width: 28rem;
+}
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+.text-2xl {
+  font-size: 1.5rem;
+}
+.font-bold {
+  font-weight: 700;
+}
+.mb-4 {
+  margin-bottom: 1rem;
+}
+.text-sm {
+  font-size: 0.875rem;
+}
+.font-medium {
+  font-weight: 500;
+}
+.mb-1 {
+  margin-bottom: 0.25rem;
+}
+.border {
+  border: 1px solid #ccc;
+}
+.p-2 {
+  padding: 0.5rem;
+}
+.w-full {
+  width: 100%;
+}
+.rounded {
+  border-radius: 0.25rem;
+}
+.text-red-500 {
+  color: #ef4444;
+}
+.bg-blue-500 {
+  background-color: #3b82f6;
+}
+.text-white {
+  color: white;
+}
+.hover\:bg-blue-600:hover {
+  background-color: #2563eb;
+}
