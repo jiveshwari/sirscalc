@@ -4,7 +4,13 @@
 
 A React-based web app for calculating SIRS criteria to aid sepsis detection in healthcare. I forked this project to explore its potential for intuitive UI enhancements, aligning with my interest in medical applications of AI.
 
-## My Contribution Attempt
+## My Final Contribution 
+- Pushed in branch: symptom-form-integration
+- Built a TypeScript-based React form to collect name, temperature, heart rate, and symptoms with validation.
+- Added SIRS analysis for temperature (>38°C or <36°C), heart rate (>90 beats/min), and symptom keywords (e.g., fever, chills).
+- Shows color-coded results (red for SIRS risk, green for no risk).
+
+## My Contribution attempt 1
 - **Goal**: Planned to add a color-coded risk indicator for better usability.
 - **Challenges**: Encountered issues with the codebase (e.g., broken dependencies, inconsistent functionality on local and official sites).
 - **Outcome**: Due to time constraints, I documented my approach instead of fully implementing changes. Screenshots below are from the original README, showcasing the intended UI.
