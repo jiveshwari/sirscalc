@@ -1,11 +1,27 @@
 # [SIRS Criteria Calculator](https://sirscalc.vercel.app/) 
 
+## Jiveshwari's Contribution Details
+
+# SIRS Calculator (Fork)
+A React-based web app for calculating SIRS criteria to aid sepsis detection in healthcare. I forked this project to explore its potential for intuitive UI enhancements, aligning with my interest in medical applications of AI.
+
+## My Contribution Attempt
+- **Goal**: Planned to add a color-coded risk indicator for better usability.
+- **Challenges**: Encountered issues with the codebase (e.g., broken dependencies, inconsistent functionality on local and official sites).
+- **Outcome**: Due to time constraints, I documented my approach instead of fully implementing changes. Screenshots below are from the original README, showcasing the intended UI.
+
+## Screenshots
+<a href="https://sirscalc.vercel.app/"><img src="https://raw.githubusercontent.com/iterating/sirscalc/refs/heads/main/public/portfolio.sirscalc.calc.jpg" width="350px"><img src="https://raw.githubusercontent.com/iterating/sirscalc/refs/heads/main/public/portfolio.sirscalc.hl7-fhir-export.jpg" width="350px"></a>
+
+## Future Plans
+With more time, I’d debug dependencies and integrate AI-driven risk prediction, leveraging my experience with AWS Bedrock from my RAG project.
+
 [![SIRS Criteria Calculator](https://raw.githubusercontent.com/iterating/sirscalc/refs/heads/main/public/portfolio.sirscalc.qr.png)](https://sirscalc.vercel.app/)
 **Try it out!**
 
 A modern web application for calculating Systemic Inflammatory Response Syndrome (SIRS) criteria, designed to assist healthcare professionals in rapid patient assessment and early sepsis detection.
 
-I wrote this as a medical student at University of Massachusetts Medical School to lessen cognitive load and improve accuracy while seeing patients in the clinics. 
+The author wrote this as a medical student at University of Massachusetts Medical School to lessen cognitive load and improve accuracy while seeing patients in the clinics. 
 
 ## What is SIRS?
 
@@ -37,9 +53,6 @@ Early detection of SIRS is crucial because:
   - FHIR: Export as FHIR Observation resources (JSON)
   - HL7: Export as HL7 v2.5.1 messages (Text)
 
-<a href="https://sirscalc.vercel.app/"><img src="https://raw.githubusercontent.com/iterating/sirscalc/refs/heads/main/public/portfolio.sirscalc.calc.jpg" width="350px"><img src="https://raw.githubusercontent.com/iterating/sirscalc/refs/heads/main/public/portfolio.sirscalc.hl7-fhir-export.jpg" width="350px"></a>
-
-
 ## Tech Stack
 
 - **Frontend**: Javascript, HTML, CSS
@@ -48,26 +61,6 @@ Early detection of SIRS is crucial because:
 - **Architecture**: Clean Architecture with Domain-Driven Design
 - **Deployment**: Vercel for serverless deployment
 - **Healthcare Standards**: FHIR R4, HL7 v2.5.1
-
-## Healthcare Interoperability
-
-The SIRS Calculator supports exporting assessment results in two widely-used healthcare interoperability standards:
-
-### FHIR (Fast Healthcare Interoperability Resources)
-- Exports data as FHIR R4 Observation resources
-- JSON format for modern API integration
-- Includes standardized LOINC codes for SIRS assessment
-- Structured data suitable for EHR integration
-
-### HL7 (Health Level 7)
-- Exports data in HL7 v2.5.1 format
-- Traditional text-based format widely used in healthcare
-- Includes MSH, PID, OBR, and OBX segments
-- Compatible with legacy healthcare systems
-
-## Contributing
-
-We welcome contributions! Please feel free to submit a Pull Request.
 
 ## License
 
